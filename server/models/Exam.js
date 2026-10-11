@@ -124,12 +124,7 @@ const examSchema = new mongoose.Schema({
         default : null ,
         trim : true ,
     } ,
-    // NOTE (Phase 1): values in the dataset mix class levels ("8", "10",
-    // "12") and "Graduate". They are stored as canonical strings (see
-    // utils/educationLevels.js) and compared by numeric rank in
-    // utils/eligibility.js — never with a Mongo string `$lte`.
-    // Nullable since the flexible-eligibility redesign: degree-level exams
-    // (e.g. GATE-shaped drafts) may carry no school-level bar.
+    // Stored as canonical strings and compared by exact match.
 
     minimumAge : {
         type : Number ,

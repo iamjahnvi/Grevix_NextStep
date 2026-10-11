@@ -139,10 +139,11 @@ describe("flexible eligibility — null-safe recommendation", () => {
         );
     });
 
-    it("null education bar never excludes; ranked checks still work", () => {
-        assert.equal(examMatchesEducation(null, "10"), true);
-        assert.equal(examMatchesEducation("12", "Graduate"), true);
-        assert.equal(examMatchesEducation("Graduate", "12"), false);
+    it("education level must match exactly", () => {
+        assert.equal(examMatchesEducation(null, "10"), false);
+        assert.equal(examMatchesEducation("10", "10"), true);
+        assert.equal(examMatchesEducation("12", "Graduate"), false);
+        assert.equal(examMatchesEducation("Graduate", "Graduate"), true);
     });
 
     it("null age bounds never exclude; maximumAge gates above-max users", () => {
@@ -192,7 +193,7 @@ describe("flexible eligibility — seed compatibility", () => {
 
     it("9. seeded recommendation behavior unchanged (spot check)", () => {
         const before = filterEligibleExams(seedExams, {
-            educationLevel: "Graduate",
+            educationLevel: "12",
             stream: "Science",
             percentage: 80,
             age: 20,

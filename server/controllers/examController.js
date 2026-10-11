@@ -139,7 +139,7 @@ const recommendExams = async(req , res) => {
         }
 
         // Eligibility is evaluated in plain JS via the canonical helpers in
-        // utils/eligibility.js (education rank ordering, all-streams stream
+        // utils/eligibility.js (exact education matching, all-streams stream
         // matching, school-subject overlap, age and percentage gates) instead
         // of unsafe Mongo string comparisons, so every exam variant in the
         // dataset is evaluated consistently.

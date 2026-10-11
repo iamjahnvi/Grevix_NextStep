@@ -440,10 +440,10 @@ function ExamDetails() {
                                 </p>
                             </div>
                             <div className="ed-info">
-                                <p className="ed-info__label">Minimum Education Level</p>
+                                <p className="ed-info__label">Education Level</p>
                                 <p className="ed-info__value">
                                     {educationLabel(exam.educationLevel) ||
-                                        "No minimum education specified"}
+                                        "No education level specified"}
                                 </p>
                             </div>
                             <div className="ed-info">
