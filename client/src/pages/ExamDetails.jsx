@@ -438,7 +438,6 @@ function ExamDetails() {
 
                     <aside className={`ed-freshness ed-freshness--${freshnessStatus.toLowerCase()}`} role="status">
                         <strong>
-                            {exam.isDemo ? "DEMO ONLY · " : ""}
                             {freshnessStatus === "CURRENT"
                                 ? "Recently verified information"
                                 : freshnessStatus === "STALE"

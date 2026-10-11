@@ -12,15 +12,12 @@ async function seedFreshnessDemo() {
     }
 
     await mongoose.connect(process.env.MONGO_URI);
-    for (const exam of demoExams) {
-        await Exam.updateOne(
-            { name: exam.name, isDemo: true },
-            { $set: exam },
-            { upsert: true }
-        );
-    }
+    // Replace the previous demo set so renamed/removed records never linger as
+    // stray cards in discovery.
+    await Exam.deleteMany({ isDemo: true });
+    await Exam.insertMany(demoExams);
     await mongoose.disconnect();
-    console.log(`Inserted or refreshed ${demoExams.length} demo freshness exams.`);
+    console.log(`Inserted ${demoExams.length} demo freshness exams.`);
 }
 
 seedFreshnessDemo().catch(async (error) => {

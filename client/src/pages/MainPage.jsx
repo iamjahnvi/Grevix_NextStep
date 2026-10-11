@@ -403,7 +403,6 @@ function HeroArt() {
 function MainPage() {
     const navigate = useNavigate();
     const { user, loading: authLoading, logout } = useAuth();
-    const freshnessDemo = new URLSearchParams(window.location.search).get("freshnessDemo") === "1";
 
     const [view, setView] = useState("discover"); // discover | matches | saved | tracker | resources | settings
     const [filters, setFilters] = useState(EMPTY_FILTERS); // dropdown drafts
@@ -456,7 +455,7 @@ function MainPage() {
             if (activeFilters.month) params.month = activeFilters.month;
             if (activeFilters.applicationStatus)
                 params.applicationStatus = activeFilters.applicationStatus;
-            if (freshnessDemo) params.demoData = "true";
+            params.demoData = "true";
             const response = await api.get("exams/discover", { params });
             setDiscoverCache(response.data.data || []);
             setPersonalized(response.data.personalized === true);
@@ -467,7 +466,7 @@ function MainPage() {
         } finally {
             setLoading(false);
         }
-    }, [freshnessDemo]);
+    }, []);
 
     const runMatches = useCallback(async () => {
         setLoading(true);
@@ -475,7 +474,7 @@ function MainPage() {
         setNeedsProfile(false);
         try {
             const response = await api.get("exams/recommend", {
-                params: freshnessDemo ? { demoData: "true" } : undefined,
+                params: { demoData: "true" },
             });
             setMatchesCache(response.data.data || []);
             setMatchesLoaded(true);
@@ -490,7 +489,7 @@ function MainPage() {
         } finally {
             setLoading(false);
         }
-    }, [freshnessDemo]);
+    }, []);
 
     useEffect(() => {
         let cancelled = false;
@@ -638,7 +637,6 @@ function MainPage() {
                         </div>
                     )}
                     <span className={`dx-freshness dx-freshness--${String(freshnessStatus).toLowerCase()}`}>
-                        {exam.isDemo ? "DEMO ONLY · " : ""}
                         {freshnessLabel}
                         {expirySuffix}
                     </span>
@@ -665,7 +663,7 @@ function MainPage() {
                     <button
                         type="button"
                         className="dx-viewbtn"
-                        onClick={() => navigate(`/exams/${exam._id}${exam.isDemo ? "?freshnessDemo=1" : ""}`)}
+                        onClick={() => navigate(`/exams/${exam._id}`)}
                         aria-label={`View details of ${exam.name}`}
                     >
                         View details
@@ -967,20 +965,6 @@ function MainPage() {
                                     <p>
                                         <strong>Profile matches shown criteria.</strong> Check each exam's freshness label and confirm current requirements with its official authority.
                                     </p>
-                                </section>
-                            )}
-
-                            {view === "discover" && freshnessDemo && (
-                                <section className="freshness-demo" aria-label="Freshness status demonstration">
-                                    <div className="freshness-demo__heading">
-                                        <strong>Freshness status demo</strong>
-                                        <span>These synthetic records are clearly tagged and isolated from normal results</span>
-                                    </div>
-                                    <div className="freshness-demo__items">
-                                        <div><span className="dx-freshness dx-freshness--current">Current sample · DEMO ONLY</span><small>Verification recorded two days ago</small></div>
-                                        <div><span className="dx-freshness dx-freshness--stale">Stale sample · DEMO ONLY</span><small>Verification expired 15 days ago</small></div>
-                                        <div><span className="dx-freshness dx-freshness--unverified">Unverified sample · DEMO ONLY</span><small>No verification date is recorded</small></div>
-                                    </div>
                                 </section>
                             )}
 
