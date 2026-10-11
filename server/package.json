@@ -8,6 +8,7 @@
     "dev": "nodemon server.js",
     "test": "node --test",
     "seed": "node seed.js",
+    "backfill:freshness": "node scripts/backfillFreshness.js",
     "migrate:education-level": "node scripts/migrateEducationLevel.js",
     "seed:freshness-demo": "node scripts/seedFreshnessDemo.js"
   },
