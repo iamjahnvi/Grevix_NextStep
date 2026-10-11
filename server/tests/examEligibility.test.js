@@ -205,6 +205,19 @@ describe("flexible eligibility — seed compatibility", () => {
         assert.ok(!names.includes("CLAT UG"));
     });
 
+    it("Class 12 profiles receive only exams tagged Class 12", () => {
+        const matches = filterEligibleExams(seedExams, {
+            educationLevel: "Class 12",
+            stream: "Science",
+            percentage: 100,
+            age: 20,
+            subjects: ["Physics", "Chemistry", "Mathematics", "Biology"],
+        });
+
+        assert.ok(matches.length > 0);
+        assert.ok(matches.every((exam) => String(exam.educationLevel) === "12"));
+        assert.equal(matches.some((exam) => exam.educationLevel === "Graduate"), false);
+    });
     it("16. seed.js is untouched (still deleteMany+insertMany, no migration code)", () => {
         const fs = require("fs");
         const path = require("path");
