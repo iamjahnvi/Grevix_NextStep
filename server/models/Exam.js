@@ -217,6 +217,11 @@ const examSchema = new mongoose.Schema({
         default : null,
     } ,
 
+    isDemo : {
+        type : Boolean,
+        default : false,
+    } ,
+
     manualEdits : {
         type : [manualEditSchema] ,
         default : [] ,

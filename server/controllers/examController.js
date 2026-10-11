@@ -144,7 +144,8 @@ const recommendExams = async(req , res) => {
         // matching, school-subject overlap, age and percentage gates) instead
         // of unsafe Mongo string comparisons, so every exam variant in the
         // dataset is evaluated consistently.
-        const allExams = await Exam.find({});
+        const includeDemoData = req.query?.demoData === "true";
+        const allExams = await Exam.find(includeDemoData ? {} : { isDemo: { $ne: true } });
         const exams = filterEligibleExams(allExams, profile);
 
         const today = new Date();
@@ -209,6 +210,14 @@ const discoverExams = async(req , res) => {
         // Invalid values are rejected with 400, never silently accepted.
         const query = req.query || {};
 
+        if (query.demoData !== undefined && query.demoData !== "true" && query.demoData !== "false") {
+            return res.status(400).json({
+                success : false,
+                message : "Invalid demoData. Must be true or false.",
+            });
+        }
+        const includeDemoData = query.demoData === "true";
+
         let careerFilter = null;
         if (query.careerType !== undefined && query.careerType !== null && query.careerType !== "") {
             careerFilter = normalizeCareerType(query.careerType);
@@ -260,7 +269,7 @@ const discoverExams = async(req , res) => {
         // Conceptually:
         //   complete profile   -> User profile -> Eligibility -> Discovery filters.
         //   incomplete profile -> All exams -> Discovery filters (no eligibility).
-        const allExams = await Exam.find({});
+        const allExams = await Exam.find(includeDemoData ? {} : { isDemo: { $ne: true } });
         const exams = complete ? filterEligibleExams(allExams, profile) : allExams;
 
         const now = new Date();

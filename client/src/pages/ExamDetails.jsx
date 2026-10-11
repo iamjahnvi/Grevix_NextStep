@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useAuth } from "../context/useAuth";
 import { useTheme } from "../lib/useTheme";
-import { getDemoFreshnessStatus, isFreshnessDemoEnabled } from "../lib/freshnessDemo";
 import ProfileMenu from "../components/ProfileMenu";
 import ThemeToggle from "../components/ThemeToggle";
 import {
@@ -211,7 +210,6 @@ function ExamDetails() {
     const [loading, setLoading] = useState(true);
     const [savedMap, setSavedMap] = useState(loadSaved);
     const [shared, setShared] = useState(false);
-    const freshnessDemo = isFreshnessDemoEnabled();
 
     useEffect(() => {
         const fetchExam = async () => {
@@ -294,8 +292,7 @@ function ExamDetails() {
     const isSaved = Boolean(savedMap[exam._id]);
     const pct = completeness(user?.profile);
     const classLabel = educationLabel(exam.educationLevel) || "No education requirement";
-    const demoFreshness = getDemoFreshnessStatus(exam.name, freshnessDemo);
-    const freshnessStatus = demoFreshness || exam.freshness?.status || "UNVERIFIED";
+    const freshnessStatus = exam.freshness?.status || "UNVERIFIED";
     const streamLabel = Array.isArray(exam.streams) && exam.streams.length > 0
         ? exam.streams.join(" · ")
         : "No stream requirement";
@@ -433,7 +430,7 @@ function ExamDetails() {
 
                     <aside className={`ed-freshness ed-freshness--${freshnessStatus.toLowerCase()}`} role="status">
                         <strong>
-                            {demoFreshness ? "DEMO ONLY · " : ""}
+                            {exam.isDemo ? "DEMO ONLY · " : ""}
                             {freshnessStatus === "CURRENT"
                                 ? "Recently verified information"
                                 : freshnessStatus === "STALE"

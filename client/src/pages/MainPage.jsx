@@ -14,7 +14,6 @@ import ProfileMenu from "../components/ProfileMenu";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../lib/useTheme";
 import { avatarInitialFor } from "../lib/avatarInitial";
-import { getDemoFreshnessStatus, isFreshnessDemoEnabled } from "../lib/freshnessDemo";
 import "./MainPage.css";
 
 // -----------------------------------------------------------------------------
@@ -404,7 +403,7 @@ function HeroArt() {
 function MainPage() {
     const navigate = useNavigate();
     const { user, loading: authLoading, logout } = useAuth();
-    const freshnessDemo = isFreshnessDemoEnabled();
+    const freshnessDemo = new URLSearchParams(window.location.search).get("freshnessDemo") === "1";
 
     const [view, setView] = useState("discover"); // discover | matches | saved | tracker | resources | settings
     const [filters, setFilters] = useState(EMPTY_FILTERS); // dropdown drafts
@@ -457,6 +456,7 @@ function MainPage() {
             if (activeFilters.month) params.month = activeFilters.month;
             if (activeFilters.applicationStatus)
                 params.applicationStatus = activeFilters.applicationStatus;
+            if (freshnessDemo) params.demoData = "true";
             const response = await api.get("exams/discover", { params });
             setDiscoverCache(response.data.data || []);
             setPersonalized(response.data.personalized === true);
@@ -467,14 +467,16 @@ function MainPage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [freshnessDemo]);
 
     const runMatches = useCallback(async () => {
         setLoading(true);
         setError("");
         setNeedsProfile(false);
         try {
-            const response = await api.get("exams/recommend");
+            const response = await api.get("exams/recommend", {
+                params: freshnessDemo ? { demoData: "true" } : undefined,
+            });
             setMatchesCache(response.data.data || []);
             setMatchesLoaded(true);
         } catch (err) {
@@ -488,7 +490,7 @@ function MainPage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [freshnessDemo]);
 
     useEffect(() => {
         let cancelled = false;
@@ -594,8 +596,7 @@ function MainPage() {
         const tint = careerTint(exam.careerType);
         const meta = statusMeta(exam.status);
         const isSaved = Boolean(savedMap[exam._id]);
-        const demoFreshness = getDemoFreshnessStatus(exam.name, freshnessDemo && view === "discover");
-        const freshnessStatus = demoFreshness || exam.freshness?.status || "UNVERIFIED";
+        const freshnessStatus = exam.freshness?.status || "UNVERIFIED";
         const chips = [];
         if (exam.educationLevel !== undefined && exam.educationLevel !== null) {
             const level = exam.educationLevel;
@@ -624,7 +625,7 @@ function MainPage() {
                         </div>
                     )}
                     <span className={`dx-freshness dx-freshness--${String(freshnessStatus).toLowerCase()}`}>
-                        {demoFreshness ? "DEMO ONLY · " : ""}
+                        {exam.isDemo ? "DEMO ONLY · " : ""}
                         {freshnessStatus === "CURRENT" && exam.freshness?.lastVerifiedAt
                             ? `Recently verified · ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
                             : freshnessStatus === "CURRENT"
@@ -656,7 +657,7 @@ function MainPage() {
                     <button
                         type="button"
                         className="dx-viewbtn"
-                        onClick={() => navigate(`/exams/${exam._id}${demoFreshness ? "?freshnessDemo=1" : ""}`)}
+                        onClick={() => navigate(`/exams/${exam._id}${exam.isDemo ? "?freshnessDemo=1" : ""}`)}
                         aria-label={`View details of ${exam.name}`}
                     >
                         View details
@@ -965,12 +966,12 @@ function MainPage() {
                                 <section className="freshness-demo" aria-label="Freshness status demonstration">
                                     <div className="freshness-demo__heading">
                                         <strong>Freshness status demo</strong>
-                                        <span>Selected cards below show sample statuses; database records are unchanged</span>
+                                        <span>These synthetic records are clearly tagged and isolated from normal results</span>
                                     </div>
                                     <div className="freshness-demo__items">
-                                        <div><span className="dx-freshness dx-freshness--current">JEE Main · DEMO ONLY</span><small>Example of a record checked in the last 30 days</small></div>
-                                        <div><span className="dx-freshness dx-freshness--stale">NEET UG · DEMO ONLY</span><small>Example of a record whose check expired</small></div>
-                                        <div><span className="dx-freshness dx-freshness--unverified">NTSE · DEMO ONLY</span><small>Example with no verification date recorded</small></div>
+                                        <div><span className="dx-freshness dx-freshness--current">Current sample · DEMO ONLY</span><small>Verification recorded two days ago</small></div>
+                                        <div><span className="dx-freshness dx-freshness--stale">Stale sample · DEMO ONLY</span><small>Verification expired 15 days ago</small></div>
+                                        <div><span className="dx-freshness dx-freshness--unverified">Unverified sample · DEMO ONLY</span><small>No verification date is recorded</small></div>
                                     </div>
                                 </section>
                             )}
