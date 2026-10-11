@@ -235,7 +235,7 @@ describe("Phase 16 — full lifecycle on GATE 2026 (isolated, no live fetch)", (
     assert.match(pub.stdout, /PUBLISHED/);
     const published = await Exam.find({ name: "GATE 2026" }).lean();
     assert.equal(published.length, 1);
-    assert.equal(published[0].minimumEducationLevel, "Graduate");
+    assert.equal(published[0].educationLevel, "Graduate");
     const receipts = await Receipt.find({}).lean();
     assert.equal(receipts.length, 1);
     assert.equal(receipts[0].identity, "gate-2026:2026:2026");

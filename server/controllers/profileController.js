@@ -1,6 +1,4 @@
 const updateProfile = async(req , res) => {
-    console.log("BODY RECIEVED : ");
-    console.log(req.body)
     try {
         const {
             age,
@@ -36,9 +34,7 @@ const updateProfile = async(req , res) => {
 
         await req.user.save();
 
-        console.log("After save :- ");
-        console.log(req.user);
-
+        
         return res.status(200).json({
             success : true ,
             message : "Profile updated successfully" ,

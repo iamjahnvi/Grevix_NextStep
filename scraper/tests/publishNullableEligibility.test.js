@@ -106,7 +106,7 @@ describe("publish boundary — nullable eligibility (no invented values)", () =>
   it("12. GATE-shaped VERIFIED draft publishes without streams/subjects", async () => {
     const id = await verifiedGateDraftId();
     const { exam, provenance } = buildPublishPayloadFromDraft(await EditionDraft.findById(id));
-    assert.equal(exam.minimumEducationLevel, "Graduate");
+    assert.equal(exam.educationLevel, "Graduate");
     assert.equal(exam.streams, null);
     assert.equal(exam.subjects, null);
     assert.equal(exam.minimumAge, null);
@@ -163,7 +163,7 @@ describe("publish boundary — nullable eligibility (no invented values)", () =>
     );
     // Null education is still unpublishable — adjudicate first, never guess.
     assert.equal(
-      validatePublishRequest({ draft, payload: { ...exam, minimumEducationLevel: null } }).ok,
+      validatePublishRequest({ draft, payload: { ...exam, educationLevel: null } }).ok,
       false
     );
     // maximumAge below minimumAge rejects.

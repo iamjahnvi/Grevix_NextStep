@@ -36,7 +36,7 @@ const baseExam = (overrides = {}) => ({
     fullForm: "Null Test Examination",
     streams: ["Science"],
     subjects: ["Physics"],
-    minimumEducationLevel: "12",
+    educationLevel: "12",
     registrationStartDate: new Date("2026-01-15"),
     registrationEndDate: new Date("2026-02-20"),
     officialWebsite: "https://example.com/exam",
@@ -68,7 +68,7 @@ describe("flexible eligibility — nullable schema", () => {
             baseExam({
                 streams: null,
                 subjects: null,
-                minimumEducationLevel: null,
+                educationLevel: null,
                 minimumAge: null,
                 maximumAge: null,
                 eligibility: { minimumPercentage: null },
@@ -161,7 +161,7 @@ describe("flexible eligibility — null-safe recommendation", () => {
         const gateLike = {
             streams: null,
             subjects: null,
-            minimumEducationLevel: "Graduate",
+            educationLevel: "Graduate",
             minimumAge: null,
             maximumAge: null,
             eligibility: { minimumPercentage: null },
@@ -184,7 +184,7 @@ describe("flexible eligibility — seed compatibility", () => {
     it("9. seeded values survive intact (no null coercion)", () => {
         const ntse = new Exam(seedExams.find((e) => e.name === "NTSE")).toObject();
         assert.deepEqual(ntse.streams, ["General (all streams)"]);
-        assert.equal(ntse.minimumEducationLevel, "10");
+        assert.equal(ntse.educationLevel, "10");
         const neet = new Exam(seedExams.find((e) => e.name === "NEET UG")).toObject();
         assert.equal(neet.minimumAge, 17);
         assert.equal(neet.eligibility.minimumPercentage, 50);
@@ -257,7 +257,7 @@ describe("flexible eligibility — manual edits & custom criteria", () => {
         assert.throws(() => applyManualEligibility(doc, { field: "location", value: "Delhi" }), /unknown field/);
         assert.throws(() => applyManualEligibility(doc, { field: "streams", value: [""] }), /invalid value/);
         assert.throws(
-            () => applyManualEligibility(doc, { field: "minimumEducationLevel", value: "Kindergarten" }),
+            () => applyManualEligibility(doc, { field: "educationLevel", value: "Kindergarten" }),
             /invalid value/
         );
         assert.throws(

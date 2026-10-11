@@ -291,7 +291,7 @@ function ExamDetails() {
     const meta = statusMeta(status);
     const isSaved = Boolean(savedMap[exam._id]);
     const pct = completeness(user?.profile);
-    const classLabel = educationLabel(exam.minimumEducationLevel) || "No education requirement";
+    const classLabel = educationLabel(exam.educationLevel) || "No education requirement";
     const streamLabel = Array.isArray(exam.streams) && exam.streams.length > 0
         ? exam.streams.join(" · ")
         : "No stream requirement";
@@ -442,7 +442,7 @@ function ExamDetails() {
                             <div className="ed-info">
                                 <p className="ed-info__label">Minimum Education Level</p>
                                 <p className="ed-info__value">
-                                    {educationLabel(exam.minimumEducationLevel) ||
+                                    {educationLabel(exam.educationLevel) ||
                                         "No minimum education specified"}
                                 </p>
                             </div>
@@ -568,7 +568,7 @@ function ExamDetails() {
                         <div className="ed-rail__row">
                             <span className="ed-rail__label">Minimum education</span>
                             <span className="ed-rail__val">
-                                {educationLabel(exam.minimumEducationLevel) || "—"}
+                                {educationLabel(exam.educationLevel) || "—"}
                             </span>
                         </div>
                         <div className="ed-rail__row">

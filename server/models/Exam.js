@@ -119,7 +119,7 @@ const examSchema = new mongoose.Schema({
         default : null ,
     } ,
 
-    minimumEducationLevel : {
+    educationLevel : {
         type : String ,
         default : null ,
         trim : true ,

@@ -37,3 +37,16 @@ __pycache__/
 .pytest_cache/
 # STEP 15 live pilot outputs (live excerpts, machine-dependent, regenerable)
 scraper/pilot/results/*.json
+# Python virtual environments and generated caches
+.venv/
+venv/
+*.py[cod]
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Test and compiler outputs
+coverage/
+build/
+*.tsbuildinfo

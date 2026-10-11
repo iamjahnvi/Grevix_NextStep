@@ -101,7 +101,7 @@ function verifyPublishedRecord({ stored, mappedExam, draft, identity }) {
     "name",
     "fullForm",
     "description",
-    "minimumEducationLevel",
+    "educationLevel",
     "minimumAge",
     "registrationStartDate",
     "registrationEndDate",

@@ -12,3 +12,4 @@ pytest>=8.0
 # `pip install docling` activates DoclingProcessor automatically with zero
 # contract change (see app/processor.py get_processor + README).
 # docling
+python-multipart>=0.0.20

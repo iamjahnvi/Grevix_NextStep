@@ -17,7 +17,7 @@
 //   - examMatchesStream / userMatchesExamSubjects are exported for testing.
 // =============================================================================
 
-const { normalizeEducationLevel, getEducationRank } = require("./educationLevels");
+const { normalizeEducationLevel } = require("./educationLevels");
 
 const CANONICAL_STREAMS = ["Science", "Commerce", "Arts/Humanities"];
 
@@ -273,13 +273,11 @@ const isProfileComplete = (profile) => {
     return { complete: missing.length === 0, missing };
 };
 
-const examMatchesEducation = (examMinimumEducationLevel, userEducationLevel) => {
-    const examRank = getEducationRank(examMinimumEducationLevel);
-    // No confirmed education bar on the exam -> criterion not evaluated.
-    if (examRank === null) return true;
-    const userRank = getEducationRank(userEducationLevel);
-    if (userRank === null) return false;
-    return userRank >= examRank;
+const examMatchesEducation = (examEducationLevel, userEducationLevel) => {
+    const examLevel = normalizeEducationLevel(examEducationLevel);
+    // An exam without a confirmed education level cannot be class-matched.
+    if (examLevel === null) return false;
+    return examLevel === normalizeEducationLevel(userEducationLevel);
 };
 
 const examMatchesPercentage = (exam, userPercentage) => {
@@ -350,7 +348,7 @@ const isEligibleForExam = (exam, profile) => {
     // are display-only until a future implementation wires them in — they
     // must never silently filter anyone out.
     if (!exam || !profile) return false;
-    if (!examMatchesEducation(exam.minimumEducationLevel, profile.educationLevel)) return false;
+    if (!examMatchesEducation(exam.educationLevel, profile.educationLevel)) return false;
     if (!examMatchesStream(exam.streams, profile.stream)) return false;
     if (!examMatchesPercentage(exam, profile.percentage)) return false;
     if (!examMatchesAge(exam, getAgeFromProfile(profile))) return false;

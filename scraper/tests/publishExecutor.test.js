@@ -42,7 +42,7 @@ function getStandInExamModel(connection) {
       name: { type: String, required: true, trim: true },
       fullForm: { type: String, required: true, trim: true },
       streams: { type: [String], required: true },
-      minimumEducationLevel: { type: String, required: true, trim: true },
+      educationLevel: { type: String, required: true, trim: true },
       minimumAge: { type: Number },
       registrationStartDate: { type: Date, required: true },
       registrationEndDate: { type: Date, required: true },
@@ -131,7 +131,7 @@ function demoExam(seed) {
     name: `Demo Exam ${seed}`,
     fullForm: `Demo Examination ${seed}`,
     streams: ["General (all streams)"],
-    minimumEducationLevel: "12",
+    educationLevel: "12",
     registrationStartDate: new Date("2025-01-01T00:00:00Z"),
     registrationEndDate: new Date("2025-02-01T00:00:00Z"),
     officialWebsite: `http://127.0.0.1/demo-${seed}`,
@@ -300,7 +300,7 @@ describe("Phase 8 — publishExecutor (manual publish, dry-run default)", () => 
       1
     );
     const stored = await Exam.findById(first.examId).lean();
-    assert.equal(stored.minimumEducationLevel, "12");
+    assert.equal(stored.educationLevel, "12");
     assert.deepEqual(stored.streams, ["Science"]);
 
     const second = await publishVerifiedDraft(EditionDraft, {

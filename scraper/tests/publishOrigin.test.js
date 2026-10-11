@@ -80,7 +80,7 @@ function getOriginAwareExamModel(connection) {
       name: { type: String, required: true, trim: true },
       fullForm: { type: String, required: true, trim: true },
       streams: { type: [String], default: null },
-      minimumEducationLevel: { type: String, default: null, trim: true },
+      educationLevel: { type: String, default: null, trim: true },
       minimumAge: { type: Number, default: null },
       maximumAge: { type: Number, default: null },
       registrationStartDate: { type: Date, required: true },

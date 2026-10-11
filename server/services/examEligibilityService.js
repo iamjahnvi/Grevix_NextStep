@@ -12,7 +12,7 @@
 // CONTRACT (pure document mutation — no DB I/O here, callers save):
 //   applyManualEligibility(examDoc, { field, value, updatedBy, note })
 //     field: "streams" | "subjects" | "minimumAge" | "maximumAge" |
-//            "minimumEducationLevel" | "description" |
+//            "educationLevel" | "description" |
 //            "eligibility.<commonField>" (see MANUAL_ELIGIBILITY_FIELDS).
 //     value: the corrected value (null clears back to "no confirmed value").
 //     Throws on unknown fields, mistyped values, or unrecognised education
@@ -40,7 +40,7 @@ const MANUAL_TOP_LEVEL_FIELDS = [
     "subjects",
     "minimumAge",
     "maximumAge",
-    "minimumEducationLevel",
+    "educationLevel",
     "description",
 ];
 
@@ -122,7 +122,7 @@ const normalizeManualValue = (field, value) => {
             }
             return { ok: true, value: num };
         }
-        case "minimumEducationLevel": {
+        case "educationLevel": {
             if (typeof value !== "string") return { ok: false };
             const canonical = normalizeEducationLevel(value);
             return canonical ? { ok: true, value: canonical } : { ok: false };

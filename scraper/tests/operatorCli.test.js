@@ -203,7 +203,7 @@ describe("Phase 9 — operator CLI (manual publish, dry-run default)", () => {
 
     const published = await Exam.find({ name: "Phase9 Test Exam" }).lean();
     assert.equal(published.length, 1);
-    assert.equal(published[0].minimumEducationLevel, "12");
+    assert.equal(published[0].educationLevel, "12");
     assert.equal(published[0].careerType, null);
     assert.ok(!("month" in published[0]));
     assert.equal(

@@ -143,7 +143,7 @@ describe("Phase 7 — publish boundary (VERIFIED draft → payload, no writes)",
     assert.equal(exam.fullForm, "Phase Seven Test Examination");
     assert.equal(exam.description, null);
     assert.equal(exam.minimumAge, 17);
-    assert.equal(exam.minimumEducationLevel, "12");
+    assert.equal(exam.educationLevel, "12");
     assert.deepEqual(exam.streams, ["Science"]);
     assert.deepEqual(exam.subjects, ["Physics", "Chemistry", "Mathematics"]);
     assert.equal(exam.eligibility.minimumPercentage, 75);

@@ -82,7 +82,7 @@ const PublishExamSchema = z
     description: z.string().nullable().optional(),
     minimumAge: z.number().int().min(0).nullable().optional(),
     maximumAge: z.number().int().min(0).nullable().optional(),
-    minimumEducationLevel: z.enum(PUBLISH_EDUCATION_LEVELS),
+    educationLevel: z.enum(PUBLISH_EDUCATION_LEVELS),
     // Nullable by product decision: null = "no confirmed requirement"
     // (e.g. degree-level exams with no school-stream/subject gating).
     // A PRESENT array must still be non-empty with non-empty entries —

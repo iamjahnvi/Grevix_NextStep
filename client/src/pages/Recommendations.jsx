@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./Recommendations.css";
@@ -11,16 +11,6 @@ function formatOpeningIn(days) {
     return `Opening in ${days} day${days === 1 ? "" : "s"}`;
 }
 
-function getUrgencySortKey(exam) {
-    if (exam.status === "Opening Soon") {
-        return exam.openingIn ?? Number.MAX_SAFE_INTEGER;
-    }
-    if (exam.status === "Open") {
-        return 0;
-    }
-    return Number.MAX_SAFE_INTEGER;
-}
-
 function Recommendations() {
     const [exams, setExams] = useState([]);
     const [error, setError] = useState("");
@@ -30,7 +20,6 @@ function Recommendations() {
         const fetchRecommendations = async () => {
             try {
                 const response = await api.get("exams/recommend");
-                console.log("recommended exams response : "  , response.data);
                 setExams(response.data.data || []);
             } catch (error) {
                 // WHY: removed the original alert() popup; show an inline error instead.
@@ -41,27 +30,12 @@ function Recommendations() {
         fetchRecommendations();
     }, []);
 
-    const sortedExams = useMemo(() => {
-        return [...exams].sort((a, b) => {
-            const urgencyDiff = getUrgencySortKey(a) - getUrgencySortKey(b);
-            if (urgencyDiff !== 0) {
-                return urgencyDiff;
-            }
-
-            if (a.status === "Open" && b.status === "Open") {
-                return (a.closingIn ?? Number.MAX_SAFE_INTEGER) - (b.closingIn ?? Number.MAX_SAFE_INTEGER);
-            }
-
-            return a.name.localeCompare(b.name);
-        });
-    }, [exams]);
-
     return (
         <div className="recommendations-page">
             <h1>Recommended Exams</h1>
             {error && <p className="recommendations-list__error">{error}</p>}
             <div className="recommendations-list">
-                {sortedExams.map((exam) => (
+                {exams.map((exam) => (
                     <article key={exam._id} className="exam-card">
                         <div className="exam-card__header">
                             <h2 className="exam-card__title">{exam.name}</h2>

@@ -32,7 +32,7 @@ function getStandInExamModel(connection) {
       name: { type: String, required: true, trim: true },
       fullForm: { type: String, required: true, trim: true },
       streams: { type: [String], required: true },
-      minimumEducationLevel: { type: String, required: true, trim: true },
+      educationLevel: { type: String, required: true, trim: true },
       minimumAge: { type: Number },
       registrationStartDate: { type: Date, required: true },
       registrationEndDate: { type: Date, required: true },
@@ -242,7 +242,7 @@ describe("STEP 10 — single-draft publish integration", () => {
     const stored = await Exam.findById(out.publishedId).lean();
     assert.equal(stored.name, "Step10 t7");
     assert.equal(stored.fullForm, "Step Ten t7 Examination");
-    assert.equal(stored.minimumEducationLevel, "12");
+    assert.equal(stored.educationLevel, "12");
     assert.deepEqual(stored.streams, ["Science"]);
     assert.deepEqual(stored.subjects, ["Physics", "Chemistry", "Mathematics"]);
     assert.equal(new Date(stored.registrationStartDate).toISOString(), "2026-01-15T00:00:00.000Z");

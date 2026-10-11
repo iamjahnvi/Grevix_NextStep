@@ -593,8 +593,8 @@ function MainPage() {
         const meta = statusMeta(exam.status);
         const isSaved = Boolean(savedMap[exam._id]);
         const chips = [];
-        if (exam.minimumEducationLevel !== undefined && exam.minimumEducationLevel !== null) {
-            const level = exam.minimumEducationLevel;
+        if (exam.educationLevel !== undefined && exam.educationLevel !== null) {
+            const level = exam.educationLevel;
             chips.push(
                 level === "Graduate" || level === "Post-Graduate" || level === "Doctorate"
                     ? level
