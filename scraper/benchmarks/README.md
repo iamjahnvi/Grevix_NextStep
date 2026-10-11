@@ -4,8 +4,6 @@ Measures the CURRENT scraper (Phase 1–29) without changing it. No Crawlee, no 
 
 ## How to run
 
-From the repository root (`nextstep-old-ui-new-backend/`):
-
 ```text
 node scraper/benchmarks/crawlBaseline.js
 node scraper/benchmarks/crawlBaseline.js --out scraper/benchmarks/results/baseline.custom.json
