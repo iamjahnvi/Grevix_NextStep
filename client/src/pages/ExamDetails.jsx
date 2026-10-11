@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useAuth } from "../context/useAuth";
 import { useTheme } from "../lib/useTheme";
+import { getDemoFreshnessStatus, isFreshnessDemoEnabled } from "../lib/freshnessDemo";
 import ProfileMenu from "../components/ProfileMenu";
 import ThemeToggle from "../components/ThemeToggle";
 import {
@@ -210,6 +211,7 @@ function ExamDetails() {
     const [loading, setLoading] = useState(true);
     const [savedMap, setSavedMap] = useState(loadSaved);
     const [shared, setShared] = useState(false);
+    const freshnessDemo = isFreshnessDemoEnabled();
 
     useEffect(() => {
         const fetchExam = async () => {
@@ -292,6 +294,8 @@ function ExamDetails() {
     const isSaved = Boolean(savedMap[exam._id]);
     const pct = completeness(user?.profile);
     const classLabel = educationLabel(exam.educationLevel) || "No education requirement";
+    const demoFreshness = getDemoFreshnessStatus(exam.name, freshnessDemo);
+    const freshnessStatus = demoFreshness || exam.freshness?.status || "UNVERIFIED";
     const streamLabel = Array.isArray(exam.streams) && exam.streams.length > 0
         ? exam.streams.join(" · ")
         : "No stream requirement";
@@ -427,11 +431,12 @@ function ExamDetails() {
                         </div>
                     </section>
 
-                    <aside className={`ed-freshness ed-freshness--${exam.freshness?.status?.toLowerCase() || "unverified"}`} role="status">
+                    <aside className={`ed-freshness ed-freshness--${freshnessStatus.toLowerCase()}`} role="status">
                         <strong>
-                            {exam.freshness?.status === "CURRENT"
+                            {demoFreshness ? "DEMO ONLY · " : ""}
+                            {freshnessStatus === "CURRENT"
                                 ? "Recently verified information"
-                                : exam.freshness?.status === "STALE"
+                                : freshnessStatus === "STALE"
                                     ? "This information may be out of date"
                                     : "This information has not been verified yet"}
                         </strong>
@@ -601,7 +606,7 @@ function ExamDetails() {
                             />
                             <span className="ed-track__text">
                                 {pct >= 100
-                                    ? exam.freshness?.status === "CURRENT"
+                                    ? freshnessStatus === "CURRENT"
                                         ? "Profile matches recently verified criteria"
                                         : "Profile matches listed criteria; verify with the authority"
                                     : "Complete your profile to check eligibility"}

@@ -14,6 +14,7 @@ import ProfileMenu from "../components/ProfileMenu";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../lib/useTheme";
 import { avatarInitialFor } from "../lib/avatarInitial";
+import { getDemoFreshnessStatus, isFreshnessDemoEnabled } from "../lib/freshnessDemo";
 import "./MainPage.css";
 
 // -----------------------------------------------------------------------------
@@ -403,7 +404,7 @@ function HeroArt() {
 function MainPage() {
     const navigate = useNavigate();
     const { user, loading: authLoading, logout } = useAuth();
-    const freshnessDemo = new URLSearchParams(window.location.search).get("freshnessDemo") === "1";
+    const freshnessDemo = isFreshnessDemoEnabled();
 
     const [view, setView] = useState("discover"); // discover | matches | saved | tracker | resources | settings
     const [filters, setFilters] = useState(EMPTY_FILTERS); // dropdown drafts
@@ -593,6 +594,8 @@ function MainPage() {
         const tint = careerTint(exam.careerType);
         const meta = statusMeta(exam.status);
         const isSaved = Boolean(savedMap[exam._id]);
+        const demoFreshness = getDemoFreshnessStatus(exam.name, freshnessDemo && view === "discover");
+        const freshnessStatus = demoFreshness || exam.freshness?.status || "UNVERIFIED";
         const chips = [];
         if (exam.educationLevel !== undefined && exam.educationLevel !== null) {
             const level = exam.educationLevel;
@@ -620,12 +623,15 @@ function MainPage() {
                             ))}
                         </div>
                     )}
-                    <span className={`dx-freshness dx-freshness--${String(exam.freshness?.status || "UNVERIFIED").toLowerCase()}`}>
-                        {exam.freshness?.status === "CURRENT" && exam.freshness.lastVerifiedAt
+                    <span className={`dx-freshness dx-freshness--${String(freshnessStatus).toLowerCase()}`}>
+                        {demoFreshness ? "DEMO ONLY · " : ""}
+                        {freshnessStatus === "CURRENT" && exam.freshness?.lastVerifiedAt
                             ? `Recently verified · ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
-                            : exam.freshness?.status === "STALE"
-                                ? "Verification expired · check official source"
-                                : "Not yet verified · check official source"}
+                            : freshnessStatus === "CURRENT"
+                                ? "Recently verified"
+                                : freshnessStatus === "STALE"
+                                    ? "Verification expired · check official source"
+                                    : "Not yet verified · check official source"}
                     </span>
                 </div>
                 <div className="dx-card-side">
@@ -650,7 +656,7 @@ function MainPage() {
                     <button
                         type="button"
                         className="dx-viewbtn"
-                        onClick={() => navigate(`/exams/${exam._id}`)}
+                        onClick={() => navigate(`/exams/${exam._id}${demoFreshness ? "?freshnessDemo=1" : ""}`)}
                         aria-label={`View details of ${exam.name}`}
                     >
                         View details
@@ -959,12 +965,12 @@ function MainPage() {
                                 <section className="freshness-demo" aria-label="Freshness status demonstration">
                                     <div className="freshness-demo__heading">
                                         <strong>Freshness status demo</strong>
-                                        <span>Display-only examples · real exam records are unchanged</span>
+                                        <span>Selected cards below show sample statuses; database records are unchanged</span>
                                     </div>
                                     <div className="freshness-demo__items">
-                                        <div><span className="dx-freshness dx-freshness--current">Recently verified</span><small>Checked within the last 30 days</small></div>
-                                        <div><span className="dx-freshness dx-freshness--stale">Verification expired</span><small>Last check was more than 30 days ago</small></div>
-                                        <div><span className="dx-freshness dx-freshness--unverified">Not yet verified</span><small>No verification date is recorded</small></div>
+                                        <div><span className="dx-freshness dx-freshness--current">JEE Main · DEMO ONLY</span><small>Example of a record checked in the last 30 days</small></div>
+                                        <div><span className="dx-freshness dx-freshness--stale">NEET UG · DEMO ONLY</span><small>Example of a record whose check expired</small></div>
+                                        <div><span className="dx-freshness dx-freshness--unverified">NTSE · DEMO ONLY</span><small>Example with no verification date recorded</small></div>
                                     </div>
                                 </section>
                             )}
