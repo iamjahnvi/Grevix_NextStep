@@ -94,6 +94,27 @@ describe("freshness TTL — boundary & metadata", () => {
         assert.equal(result.name, "X");
         assert.equal(result.freshness.status, "CURRENT");
     });
+
+    it("points a current record at its next automated check (TTL lapse)", () => {
+        const checkedAt = new Date(NOW.getTime() - 5 * DAY_MS);
+        const freshness = getExamFreshness({ lastVerifiedAt: checkedAt }, NOW, 30);
+        assert.equal(freshness.nextCheckAt, freshness.expiresAt);
+        assert.equal(freshness.daysUntilNextCheck, 25);
+        assert.equal(freshness.autoRecheck, true);
+        assert.equal(typeof freshness.recheckIntervalMinutes, "number");
+    });
+
+    it("marks stale and unverified records as due for the next sweep", () => {
+        const stale = getExamFreshness({ lastVerifiedAt: new Date(NOW.getTime() - 40 * DAY_MS) }, NOW, 30);
+        assert.equal(stale.status, "STALE");
+        assert.equal(stale.daysUntilNextCheck, 0);
+        assert.equal(stale.nextCheckAt, NOW.toISOString());
+
+        const unverified = getExamFreshness({}, NOW, 30);
+        assert.equal(unverified.status, "UNVERIFIED");
+        assert.equal(unverified.daysUntilNextCheck, 0);
+        assert.equal(unverified.nextCheckAt, NOW.toISOString());
+    });
 });
 
 describe("re-verification (markVerified)", () => {

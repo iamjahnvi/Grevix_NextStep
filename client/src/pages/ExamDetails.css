@@ -30,6 +30,8 @@
 }
 
 .ed-freshness--current { background: #edf8f0; border-color: #b9ddc3; }
+.ed-freshness--stale { background: #eef4ff; border-color: #c7d8f5; }
+.ed-freshness--unverified { background: #f3f5f9; border-color: #d8dee9; }
 
 .ed-main {
   min-width: 0;

@@ -108,11 +108,16 @@ describe("auto re-verification — evidence-driven renewal", () => {
 });
 
 describe("auto re-verification — scheduler config", () => {
-    it("is disabled by default and does not start", () => {
+    it("is enabled by default and does not auto-start", () => {
         const scheduler = createReverificationScheduler();
         const stats = scheduler.stats();
-        assert.equal(stats.enabled, false);
+        assert.equal(stats.enabled, true);
         assert.equal(stats.started, false);
+    });
+
+    it("respects an explicit disable", () => {
+        const scheduler = createReverificationScheduler({ enabled: false });
+        assert.equal(scheduler.stats().enabled, false);
         assert.deepEqual(scheduler.start(), { started: false, reason: "disabled" });
     });
 

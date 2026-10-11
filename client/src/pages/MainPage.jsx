@@ -14,6 +14,7 @@ import ProfileMenu from "../components/ProfileMenu";
 import ThemeToggle from "../components/ThemeToggle";
 import { useTheme } from "../lib/useTheme";
 import { avatarInitialFor } from "../lib/avatarInitial";
+import { freshnessBadge } from "../lib/freshnessCopy";
 import "./MainPage.css";
 
 // -----------------------------------------------------------------------------
@@ -596,19 +597,7 @@ function MainPage() {
         const meta = statusMeta(exam.status);
         const isSaved = Boolean(savedMap[exam._id]);
         const freshnessStatus = exam.freshness?.status || "UNVERIFIED";
-        const expiryDays = exam.freshness?.daysUntilExpiry;
-        const expirySuffix = typeof expiryDays !== "number"
-            ? ""
-            : freshnessStatus === "STALE"
-                ? ` · ${Math.abs(expiryDays)}d overdue`
-                : ` · re-check in ${expiryDays}d`;
-        const freshnessLabel = freshnessStatus === "CURRENT" && exam.freshness?.lastVerifiedAt
-            ? `Recently verified · ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
-            : freshnessStatus === "CURRENT"
-                ? "Recently verified"
-                : freshnessStatus === "STALE"
-                    ? "Verification expired · check official source"
-                    : "Not yet verified · check official source";
+        const { label: freshnessLabel, note: expirySuffix } = freshnessBadge(exam.freshness);
         const chips = [];
         if (exam.educationLevel !== undefined && exam.educationLevel !== null) {
             const level = exam.educationLevel;

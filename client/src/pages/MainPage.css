@@ -1166,8 +1166,8 @@
 }
 
 .dx-freshness--current { color: #176b3d; background: #e5f6ec; }
-.dx-freshness--stale { color: #855a0b; background: #fff3d5; }
-.dx-freshness--unverified { color: #8b3c2b; background: #fff0eb; }
+.dx-freshness--stale { color: #1b4d8f; background: #e9f1fd; }
+.dx-freshness--unverified { color: #47536b; background: #eef1f6; }
 
 .dx-card-side {
   display: flex;

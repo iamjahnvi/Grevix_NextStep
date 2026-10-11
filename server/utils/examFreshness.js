@@ -22,6 +22,7 @@
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_FRESHNESS_TTL_DAYS = 30;
+const DEFAULT_RECHECK_INTERVAL_MINUTES = 30;
 
 // Reads a positive, finite TTL (in days) from the environment, falling back to
 // the default for anything missing/malformed. Never throws — a bad config
@@ -42,6 +43,41 @@ function resolveTtlDays(value = process.env.FRESHNESS_TTL_DAYS) {
 // available through the `ttlDays` parameter.
 const FRESHNESS_TTL_DAYS = resolveTtlDays();
 
+// How often the automatic source re-check sweeps STALE records, in minutes.
+// Reuses the scheduler's REVERIFY_INTERVAL_MINUTES so the number we show the
+// user is the same cadence the worker actually runs on.
+function resolveRecheckIntervalMinutes(value = process.env.REVERIFY_INTERVAL_MINUTES) {
+    if (value === undefined || value === null || String(value).trim() === "") {
+        return DEFAULT_RECHECK_INTERVAL_MINUTES;
+    }
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+        return DEFAULT_RECHECK_INTERVAL_MINUTES;
+    }
+    return parsed;
+}
+
+const RECHECK_INTERVAL_MINUTES = resolveRecheckIntervalMinutes();
+
+// True unless the operator explicitly turned the background worker off. Lets the
+// UI promise automatic refresh only when it is genuinely running (credibility).
+function isAutoRecheckEnabled() {
+    return process.env.REVERIFY_ENABLED !== "false";
+}
+
+// Transparency metadata shared by every verdict: when the next automated check
+// falls due, and how long that is in whole days. CURRENT records are re-checked
+// when the TTL lapses; STALE/UNVERIFIED records are due on the next sweep.
+function recheckMetadata(status, expiresAt, now) {
+    const nextCheckAt = status === "CURRENT" && expiresAt ? expiresAt : now;
+    return {
+        autoRecheck: isAutoRecheckEnabled(),
+        recheckIntervalMinutes: RECHECK_INTERVAL_MINUTES,
+        nextCheckAt: nextCheckAt.toISOString(),
+        daysUntilNextCheck: Math.max(0, Math.ceil((nextCheckAt.getTime() - now.getTime()) / DAY_MS)),
+    };
+}
+
 function getExamFreshness(exam, now = new Date(), ttlDays = FRESHNESS_TTL_DAYS) {
     const lastVerifiedAt = exam?.lastVerifiedAt ? new Date(exam.lastVerifiedAt) : null;
     const validVerificationDate = lastVerifiedAt && !Number.isNaN(lastVerifiedAt.getTime());
@@ -54,14 +90,16 @@ function getExamFreshness(exam, now = new Date(), ttlDays = FRESHNESS_TTL_DAYS) 
             ttlDays,
             ageInDays: null,
             daysUntilExpiry: null,
+            ...recheckMetadata("UNVERIFIED", null, now),
         };
     }
 
     const ttlMs = ttlDays * DAY_MS;
     const expiresAt = new Date(lastVerifiedAt.getTime() + ttlMs);
     const isCurrent = now <= expiresAt;
+    const status = isCurrent ? "CURRENT" : "STALE";
     return {
-        status: isCurrent ? "CURRENT" : "STALE",
+        status,
         lastVerifiedAt: lastVerifiedAt.toISOString(),
         expiresAt: expiresAt.toISOString(),
         ttlDays,
@@ -69,6 +107,7 @@ function getExamFreshness(exam, now = new Date(), ttlDays = FRESHNESS_TTL_DAYS) 
         // lapses (negative once stale). Both null when there is nothing to age.
         ageInDays: Math.floor((now.getTime() - lastVerifiedAt.getTime()) / DAY_MS),
         daysUntilExpiry: Math.ceil((expiresAt.getTime() - now.getTime()) / DAY_MS),
+        ...recheckMetadata(status, expiresAt, now),
     };
 }
 
@@ -85,8 +124,12 @@ function withExamFreshness(exam, now = new Date(), ttlDays = FRESHNESS_TTL_DAYS)
 
 module.exports = {
     DEFAULT_FRESHNESS_TTL_DAYS,
+    DEFAULT_RECHECK_INTERVAL_MINUTES,
     FRESHNESS_TTL_DAYS,
+    RECHECK_INTERVAL_MINUTES,
     resolveTtlDays,
+    resolveRecheckIntervalMinutes,
+    isAutoRecheckEnabled,
     getExamFreshness,
     isFreshnessExpired,
     withExamFreshness,

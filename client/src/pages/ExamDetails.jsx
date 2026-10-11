@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useAuth } from "../context/useAuth";
 import { useTheme } from "../lib/useTheme";
+import { freshnessDetail } from "../lib/freshnessCopy";
 import ProfileMenu from "../components/ProfileMenu";
 import ThemeToggle from "../components/ThemeToggle";
 import {
@@ -293,14 +294,7 @@ function ExamDetails() {
     const pct = completeness(user?.profile);
     const classLabel = educationLabel(exam.educationLevel) || "No education requirement";
     const freshnessStatus = exam.freshness?.status || "UNVERIFIED";
-    // TTL countdown: how long until (or since) the verification lapses. Only
-    // shown when the server supplies daysUntilExpiry (verified records).
-    const expiryDays = exam.freshness?.daysUntilExpiry;
-    const expiryNote = typeof expiryDays !== "number"
-        ? ""
-        : freshnessStatus === "STALE"
-            ? ` Expired ${Math.abs(expiryDays)} day${Math.abs(expiryDays) === 1 ? "" : "s"} ago.`
-            : ` Freshness expires in ${expiryDays} day${expiryDays === 1 ? "" : "s"}.`;
+    const freshness = freshnessDetail(exam.freshness);
     const streamLabel = Array.isArray(exam.streams) && exam.streams.length > 0
         ? exam.streams.join(" · ")
         : "No stream requirement";
@@ -437,18 +431,8 @@ function ExamDetails() {
                     </section>
 
                     <aside className={`ed-freshness ed-freshness--${freshnessStatus.toLowerCase()}`} role="status">
-                        <strong>
-                            {freshnessStatus === "CURRENT"
-                                ? "Recently verified information"
-                                : freshnessStatus === "STALE"
-                                    ? "This information may be out of date"
-                                    : "This information has not been verified yet"}
-                        </strong>
-                        <span>
-                            {exam.freshness?.lastVerifiedAt
-                                ? `Last checked ${formatDate(exam.freshness.lastVerifiedAt)}.${expiryNote} Confirm eligibility and dates with the official exam authority before applying.`
-                                : "Confirm eligibility and registration dates with the official exam authority before applying."}
-                        </span>
+                        <strong>{freshness.title}</strong>
+                        <span>{freshness.body}</span>
                     </aside>
 
                     <section className="ed-card" aria-label="Eligibility">

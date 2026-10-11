@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { freshnessBadge } from "../lib/freshnessCopy";
 import "./Recommendations.css";
 
 function formatOpeningIn(days) {
@@ -9,15 +10,6 @@ function formatOpeningIn(days) {
         return `Opening in ~${months} month${months === 1 ? "" : "s"}`;
     }
     return `Opening in ${days} day${days === 1 ? "" : "s"}`;
-}
-
-// Freshness TTL countdown supplied by the server for verified records.
-function freshnessNote(exam) {
-    const days = exam.freshness?.daysUntilExpiry;
-    if (typeof days !== "number") return "";
-    return exam.freshness?.status === "STALE"
-        ? ` · ${Math.abs(days)}d overdue`
-        : ` · re-check in ${days}d`;
 }
 
 function Recommendations() {
@@ -50,15 +42,18 @@ function Recommendations() {
             {error && <p className="recommendations-list__error">{error}</p>}
             {!error && exams.length > 0 && (
                 <aside className="recommendations-freshness" role="status">
-                    <strong>Check official details before applying.</strong>
+                    <strong>We keep this list verified for you.</strong>
                     <span>
-                        {verificationCounts.verified} recently verified · {verificationCounts.needsVerification} need a freshness check.
-                        Older or unverified matches remain visible so you can explore every opportunity.
+                        {verificationCounts.verified} freshly verified · {verificationCounts.needsVerification} refreshing
+                        automatically in the background. We re-check the official sources on your behalf — no action needed,
+                        and every match stays visible so you never miss an opportunity.
                     </span>
                 </aside>
             )}
             <div className="recommendations-list">
-                {exams.map((exam) => (
+                {exams.map((exam) => {
+                    const badge = freshnessBadge(exam.freshness);
+                    return (
                     <article key={exam._id} className="exam-card">
                         <div className="exam-card__header">
                             <h2 className="exam-card__title">{exam.name}</h2>
@@ -76,10 +71,7 @@ function Recommendations() {
                                 {exam.eligibilityConfidence === "CURRENT" ? "Verified profile match" : "Potential profile match"}
                             </span>
                             <span className={`exam-card__freshness exam-card__freshness--${exam.freshness?.status?.toLowerCase() || "unverified"}`}>
-                                {exam.freshness?.status === "CURRENT"
-                                    ? `Verified ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
-                                    : exam.freshness?.status === "STALE" ? "Verify eligibility and dates" : "Not yet verified"}
-                                {freshnessNote(exam)}
+                                {badge.label}{badge.note}
                             </span>
                             {exam.status === "Open" && (
                                 <>
@@ -102,7 +94,8 @@ function Recommendations() {
                             )}
                         </div>
                     </article>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

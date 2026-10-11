@@ -19,7 +19,7 @@ function envNumber(name, fallback) {
 }
 
 function createReverificationScheduler(opts = {}) {
-    const enabled = opts.enabled !== undefined ? Boolean(opts.enabled) : process.env.REVERIFY_ENABLED === "true";
+    const enabled = opts.enabled !== undefined ? Boolean(opts.enabled) : process.env.REVERIFY_ENABLED !== "false";
     const intervalMinutes = envNumber("REVERIFY_INTERVAL_MINUTES", opts.intervalMinutes !== undefined ? opts.intervalMinutes : 30);
     const limit = envNumber("REVERIFY_LIMIT_PER_RUN", opts.limit !== undefined ? opts.limit : 5);
     const intervalMs = intervalMinutes * 60 * 1000;
