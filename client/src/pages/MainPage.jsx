@@ -403,6 +403,7 @@ function HeroArt() {
 function MainPage() {
     const navigate = useNavigate();
     const { user, loading: authLoading, logout } = useAuth();
+    const freshnessDemo = new URLSearchParams(window.location.search).get("freshnessDemo") === "1";
 
     const [view, setView] = useState("discover"); // discover | matches | saved | tracker | resources | settings
     const [filters, setFilters] = useState(EMPTY_FILTERS); // dropdown drafts
@@ -619,6 +620,13 @@ function MainPage() {
                             ))}
                         </div>
                     )}
+                    <span className={`dx-freshness dx-freshness--${String(exam.freshness?.status || "UNVERIFIED").toLowerCase()}`}>
+                        {exam.freshness?.status === "CURRENT" && exam.freshness.lastVerifiedAt
+                            ? `Recently verified · ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
+                            : exam.freshness?.status === "STALE"
+                                ? "Verification expired · check official source"
+                                : "Not yet verified · check official source"}
+                    </span>
                 </div>
                 <div className="dx-card-side">
                     <div className="dx-side__top">
@@ -942,9 +950,22 @@ function MainPage() {
                             {view === "discover" && personalized === true && (
                                 <section className="dx-notice dx-notice--personal" aria-label="Personalized results">
                                     <p>
-                                        <strong>Eligible for you.</strong> Filtered
-                                        from the exams your profile qualifies for.
+                                        <strong>Profile matches shown criteria.</strong> Check each exam's freshness label and confirm current requirements with its official authority.
                                     </p>
+                                </section>
+                            )}
+
+                            {view === "discover" && freshnessDemo && (
+                                <section className="freshness-demo" aria-label="Freshness status demonstration">
+                                    <div className="freshness-demo__heading">
+                                        <strong>Freshness status demo</strong>
+                                        <span>Display-only examples · real exam records are unchanged</span>
+                                    </div>
+                                    <div className="freshness-demo__items">
+                                        <div><span className="dx-freshness dx-freshness--current">Recently verified</span><small>Checked within the last 30 days</small></div>
+                                        <div><span className="dx-freshness dx-freshness--stale">Verification expired</span><small>Last check was more than 30 days ago</small></div>
+                                        <div><span className="dx-freshness dx-freshness--unverified">Not yet verified</span><small>No verification date is recorded</small></div>
+                                    </div>
                                 </section>
                             )}
 
