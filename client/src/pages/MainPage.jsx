@@ -597,6 +597,19 @@ function MainPage() {
         const meta = statusMeta(exam.status);
         const isSaved = Boolean(savedMap[exam._id]);
         const freshnessStatus = exam.freshness?.status || "UNVERIFIED";
+        const expiryDays = exam.freshness?.daysUntilExpiry;
+        const expirySuffix = typeof expiryDays !== "number"
+            ? ""
+            : freshnessStatus === "STALE"
+                ? ` · ${Math.abs(expiryDays)}d overdue`
+                : ` · re-check in ${expiryDays}d`;
+        const freshnessLabel = freshnessStatus === "CURRENT" && exam.freshness?.lastVerifiedAt
+            ? `Recently verified · ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
+            : freshnessStatus === "CURRENT"
+                ? "Recently verified"
+                : freshnessStatus === "STALE"
+                    ? "Verification expired · check official source"
+                    : "Not yet verified · check official source";
         const chips = [];
         if (exam.educationLevel !== undefined && exam.educationLevel !== null) {
             const level = exam.educationLevel;
@@ -626,13 +639,8 @@ function MainPage() {
                     )}
                     <span className={`dx-freshness dx-freshness--${String(freshnessStatus).toLowerCase()}`}>
                         {exam.isDemo ? "DEMO ONLY · " : ""}
-                        {freshnessStatus === "CURRENT" && exam.freshness?.lastVerifiedAt
-                            ? `Recently verified · ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
-                            : freshnessStatus === "CURRENT"
-                                ? "Recently verified"
-                                : freshnessStatus === "STALE"
-                                    ? "Verification expired · check official source"
-                                    : "Not yet verified · check official source"}
+                        {freshnessLabel}
+                        {expirySuffix}
                     </span>
                 </div>
                 <div className="dx-card-side">

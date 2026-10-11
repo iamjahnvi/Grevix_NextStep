@@ -276,6 +276,32 @@ const getFieldProvenance = (examDoc, field) => {
     return examDoc.origin || null;
 };
 
+// Re-verification: an operator (or a probe path) confirms a record against its
+// official source and restarts the freshness TTL by stamping lastVerifiedAt.
+// WHY: freshness only helps if expiry is actionable — a stale record must be
+// resettable without editing any data value. Unlike a value correction this
+// does NOT flip origin (no eligibility field changed), but it is still audited
+// so the verification event stays traceable.
+const markVerified = (examDoc, { updatedBy = null, note = null, verifiedAt = new Date() } = {}) => {
+    if (!examDoc || typeof examDoc !== "object") {
+        throw new Error("markVerified: an exam document is required");
+    }
+    const when = verifiedAt instanceof Date ? verifiedAt : new Date(verifiedAt);
+    if (Number.isNaN(when.getTime())) {
+        throw new Error("markVerified: verifiedAt must be a valid date");
+    }
+    examDoc.lastVerifiedAt = when;
+    if (!Array.isArray(examDoc.manualEdits)) examDoc.manualEdits = [];
+    examDoc.manualEdits.push({
+        field: "lastVerifiedAt",
+        source: "MANUAL",
+        updatedBy: typeof updatedBy === "string" && updatedBy.trim() ? updatedBy.trim() : null,
+        note: typeof note === "string" && note.trim() ? note.trim() : null,
+        updatedAt: when,
+    });
+    return examDoc;
+};
+
 module.exports = {
     MANUAL_TOP_LEVEL_FIELDS,
     MANUAL_ELIGIBILITY_FIELDS,
@@ -284,5 +310,6 @@ module.exports = {
     addCustomEligibility,
     updateCustomEligibility,
     removeCustomEligibility,
+    markVerified,
     getFieldProvenance,
 };

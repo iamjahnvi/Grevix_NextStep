@@ -8,7 +8,10 @@ const {
     addCustomEligibility,
     updateCustomEligibility,
     removeCustomEligibility,
+    markVerified,
 } = require("../services/examEligibilityService");
+
+const { getExams, invalidateExamCache, examCacheStats } = require("../services/examCache");
 
 const {
     getApplicationStatus,
@@ -145,7 +148,9 @@ const recommendExams = async(req , res) => {
         // of unsafe Mongo string comparisons, so every exam variant in the
         // dataset is evaluated consistently.
         const includeDemoData = req.query?.demoData === "true";
-        const allExams = await Exam.find(includeDemoData ? {} : { isDemo: { $ne: true } });
+        // Full-collection read served from the TTL cache (see examCache.js).
+        // Freshness is still computed per record below, never cached.
+        const { exams: allExams, cache } = await getExams(includeDemoData);
         const exams = filterEligibleExams(allExams, profile);
 
         const today = new Date();
@@ -166,6 +171,7 @@ const recommendExams = async(req , res) => {
             count : exams.length ,
             verifiedCount : updatedExams.filter((exam) => exam.eligibilityConfidence === "CURRENT").length,
             needsVerificationCount : updatedExams.filter((exam) => exam.eligibilityConfidence === "VERIFY").length,
+            cache ,
             data : updatedExams ,
         })
         // standard way of returing , data , to frontend
@@ -269,7 +275,7 @@ const discoverExams = async(req , res) => {
         // Conceptually:
         //   complete profile   -> User profile -> Eligibility -> Discovery filters.
         //   incomplete profile -> All exams -> Discovery filters (no eligibility).
-        const allExams = await Exam.find(includeDemoData ? {} : { isDemo: { $ne: true } });
+        const { exams: allExams, cache } = await getExams(includeDemoData);
         const exams = complete ? filterEligibleExams(allExams, profile) : allExams;
 
         const now = new Date();
@@ -300,6 +306,7 @@ const discoverExams = async(req , res) => {
             success : true,
             count : data.length ,
             data ,
+            cache ,
             // Lets the frontend distinguish "eligible for you" from
             // "matching your filters" without guessing.
             personalized : complete ,
@@ -408,7 +415,14 @@ const updateExamEligibility = async (req , res) => {
             applyManualEligibility(exam , { field , value , updatedBy : operator , note });
         }
 
+        // A correction is made against the official source, so it also restarts
+        // the freshness clock — the record is verified again as of now.
+        markVerified(exam , { updatedBy : operator , note : note || "Eligibility corrected" });
+
         await exam.save();
+        // Eligibility changed on disk: drop the cached collection so the next
+        // recommend/discover read reflects it immediately.
+        invalidateExamCache();
 
         return res.status(200).json({
             success : true ,
@@ -422,9 +436,54 @@ const updateExamEligibility = async (req , res) => {
     }
 };
 
+// Operator re-verification: confirm an exam against its official source and
+// reset the freshness TTL. No eligibility value is changed; only
+// lastVerifiedAt is stamped (audited in manualEdits). This is the explicit,
+// safe way to clear a STALE flag that would otherwise persist forever.
+const verifyExam = async (req , res) => {
+    try {
+        const { id } = req.params;
+        const { note } = req.body || {};
+        const operator = req.user && (req.user.email || String(req.user._id || "")) || "operator";
+
+        const exam = await Exam.findById(id);
+        if (!exam) {
+            return res.status(404).json({
+                success : false ,
+                message : "Exam not found" ,
+            });
+        }
+
+        markVerified(exam , { updatedBy : operator , note });
+        await exam.save();
+        invalidateExamCache();
+
+        return res.status(200).json({
+            success : true ,
+            data : withExamFreshness(exam) ,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success : false ,
+            message : error.message ,
+        });
+    }
+};
+
+// Read-only observability for the cache-with-expiration mechanism (hits,
+// misses, expired entries, size) so the prototype can be demonstrated live.
+const getExamCacheStats = async (req , res) => {
+    return res.status(200).json({
+        success : true ,
+        data : examCacheStats() ,
+    });
+};
+
 module.exports = {
     recommendExams ,
     discoverExams ,
     getExamById,
     updateExamEligibility,
+    verifyExam,
+    getExamCacheStats,
 };

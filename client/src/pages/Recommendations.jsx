@@ -11,6 +11,15 @@ function formatOpeningIn(days) {
     return `Opening in ${days} day${days === 1 ? "" : "s"}`;
 }
 
+// Freshness TTL countdown supplied by the server for verified records.
+function freshnessNote(exam) {
+    const days = exam.freshness?.daysUntilExpiry;
+    if (typeof days !== "number") return "";
+    return exam.freshness?.status === "STALE"
+        ? ` · ${Math.abs(days)}d overdue`
+        : ` · re-check in ${days}d`;
+}
+
 function Recommendations() {
     const [exams, setExams] = useState([]);
     const [verificationCounts, setVerificationCounts] = useState({ verified: 0, needsVerification: 0 });
@@ -70,6 +79,7 @@ function Recommendations() {
                                 {exam.freshness?.status === "CURRENT"
                                     ? `Verified ${new Date(exam.freshness.lastVerifiedAt).toLocaleDateString("en-IN")}`
                                     : exam.freshness?.status === "STALE" ? "Verify eligibility and dates" : "Not yet verified"}
+                                {freshnessNote(exam)}
                             </span>
                             {exam.status === "Open" && (
                                 <>
