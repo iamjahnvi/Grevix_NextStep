@@ -6,6 +6,21 @@
   margin-bottom: var(--space-6);
 }
 
+.recommendations-freshness {
+  display: grid;
+  gap: var(--space-1);
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid #d99a27;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.recommendations-freshness span { color: var(--color-text-secondary); }
+
 .recommendations-list {
   display: flex;
   flex-direction: column;
@@ -65,6 +80,13 @@
 .exam-card__timing {
   color: var(--color-text-muted);
 }
+
+.exam-card__freshness {
+  font-weight: 600;
+  color: #805b12;
+}
+
+.exam-card__freshness--current { color: #287349; }
 
 .exam-card__meta-divider {
   color: var(--color-border-strong);

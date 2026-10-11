@@ -1,6 +1,7 @@
 const Exam = require("../models/Exam");
 
 const { isProfileComplete, filterEligibleExams } = require("../utils/eligibility");
+const { withExamFreshness, getExamFreshness } = require("../utils/examFreshness");
 
 const {
     applyManualEligibility,
@@ -148,11 +149,22 @@ const recommendExams = async(req , res) => {
 
         const today = new Date();
 
-        const updatedExams = enrichWithStatus(exams, today).sort(compareByUrgency);
+        const updatedExams = enrichWithStatus(exams, today)
+            .map((exam) => {
+                const freshness = getExamFreshness(exam, today);
+                return {
+                    ...exam,
+                    freshness,
+                    eligibilityConfidence: freshness.status === "CURRENT" ? "CURRENT" : "VERIFY",
+                };
+            })
+            .sort(compareByUrgency);
 
         return res.status(200).json({
             success : true,
             count : exams.length ,
+            verifiedCount : updatedExams.filter((exam) => exam.eligibilityConfidence === "CURRENT").length,
+            needsVerificationCount : updatedExams.filter((exam) => exam.eligibilityConfidence === "VERIFY").length,
             data : updatedExams ,
         })
         // standard way of returing , data , to frontend
@@ -271,7 +283,9 @@ const discoverExams = async(req , res) => {
             return true;
         });
 
-        const data = enrichWithStatus(filtered, now).sort(compareByUrgency);
+        const data = enrichWithStatus(filtered, now)
+            .map((exam) => ({ ...exam, freshness: getExamFreshness(exam, now) }))
+            .sort(compareByUrgency);
 
         return res.status(200).json({
             success : true,
@@ -314,7 +328,7 @@ const getExamById = async (req  , res) => {
 
         return res.status(200).json({
             success : true,
-            data : exam
+            data : withExamFreshness(exam)
         })
 
     } catch(error) {

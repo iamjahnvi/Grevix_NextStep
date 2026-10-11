@@ -16,6 +16,21 @@
   align-items: start;
 }
 
+.ed-freshness {
+  display: grid;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 14px 18px;
+  color: var(--dx-ink);
+  background: #fff8e8;
+  border: 1px solid #f0d89f;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ed-freshness--current { background: #edf8f0; border-color: #b9ddc3; }
+
 .ed-main {
   min-width: 0;
   display: flex;

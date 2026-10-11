@@ -114,6 +114,8 @@ const PublishExamSchema = z
     // boundary is scraper-created, never seed-created. Required as a literal
     // so the stamp cannot be dropped or forged to another origin here.
     origin: z.literal("SCRAPER"),
+    // A verified edition starts the production record's freshness window.
+    lastVerifiedAt: z.date().optional(),
     // NOTE: no `month`, no `location` by design (.strict() rejects them).
   })
   .strict()

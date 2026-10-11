@@ -13,6 +13,7 @@ const { describe, it } = require("node:test");
 const assert = require("node:assert/strict");
 
 const Exam = require("../models/Exam");
+const { getExamFreshness, FRESHNESS_TTL_DAYS } = require("../utils/examFreshness");
 const seedExams = require("../data/exams");
 const {
     examMatchesStream,
@@ -49,6 +50,28 @@ const scienceGraduate = {
     percentage: 80,
     subjects: ["Physics"],
 };
+
+describe("exam data freshness", () => {
+    const now = new Date("2026-10-11T00:00:00.000Z");
+
+    it("keeps missing verification timestamps explicitly unverified", () => {
+        assert.equal(getExamFreshness({}, now).status, "UNVERIFIED");
+    });
+
+    it("does not trust a future verification timestamp", () => {
+        assert.equal(getExamFreshness({ lastVerifiedAt: new Date(now.getTime() + 1000) }, now).status, "UNVERIFIED");
+    });
+
+    it("marks a recently checked record current for the configured TTL", () => {
+        const checkedAt = new Date(now.getTime() - (FRESHNESS_TTL_DAYS - 1) * 24 * 60 * 60 * 1000);
+        assert.equal(getExamFreshness({ lastVerifiedAt: checkedAt }, now).status, "CURRENT");
+    });
+
+    it("marks expired verification stale without hiding the exam", () => {
+        const checkedAt = new Date(now.getTime() - (FRESHNESS_TTL_DAYS + 1) * 24 * 60 * 60 * 1000);
+        assert.equal(getExamFreshness({ lastVerifiedAt: checkedAt }, now).status, "STALE");
+    });
+});
 
 describe("flexible eligibility — nullable schema", () => {
     it("2. exam with null streams is valid", () => {

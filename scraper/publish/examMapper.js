@@ -80,6 +80,9 @@ function mapDraftToExamPayload(draft) {
     careerType: null,
     examType: null,
     origin: "SCRAPER",
+    // VERIFIED drafts have passed the human review gate against their
+    // official source evidence, so publishing starts a 30-day freshness TTL.
+    lastVerifiedAt: new Date(),
   };
 
   const provenance = {

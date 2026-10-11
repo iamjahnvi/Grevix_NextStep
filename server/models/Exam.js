@@ -210,6 +210,13 @@ const examSchema = new mongoose.Schema({
         default : "SEED" ,
     } ,
 
+    // Set only after an official source was checked or a verified scraper
+    // edition was published. Missing timestamps remain explicitly unverified.
+    lastVerifiedAt : {
+        type : Date,
+        default : null,
+    } ,
+
     manualEdits : {
         type : [manualEditSchema] ,
         default : [] ,

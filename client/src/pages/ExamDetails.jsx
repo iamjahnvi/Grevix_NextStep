@@ -427,6 +427,21 @@ function ExamDetails() {
                         </div>
                     </section>
 
+                    <aside className={`ed-freshness ed-freshness--${exam.freshness?.status?.toLowerCase() || "unverified"}`} role="status">
+                        <strong>
+                            {exam.freshness?.status === "CURRENT"
+                                ? "Recently verified information"
+                                : exam.freshness?.status === "STALE"
+                                    ? "This information may be out of date"
+                                    : "This information has not been verified yet"}
+                        </strong>
+                        <span>
+                            {exam.freshness?.lastVerifiedAt
+                                ? `Last checked ${formatDate(exam.freshness.lastVerifiedAt)}. Confirm eligibility and dates with the official exam authority before applying.`
+                                : "Confirm eligibility and registration dates with the official exam authority before applying."}
+                        </span>
+                    </aside>
+
                     <section className="ed-card" aria-label="Eligibility">
                         <h2 className="ed-card__title">Eligibility</h2>
                         <p className="ed-card__sub">What you need to qualify for this exam</p>
@@ -586,7 +601,9 @@ function ExamDetails() {
                             />
                             <span className="ed-track__text">
                                 {pct >= 100
-                                    ? "Profile eligible for this exam"
+                                    ? exam.freshness?.status === "CURRENT"
+                                        ? "Profile matches recently verified criteria"
+                                        : "Profile matches listed criteria; verify with the authority"
                                     : "Complete your profile to check eligibility"}
                             </span>
                         </div>
