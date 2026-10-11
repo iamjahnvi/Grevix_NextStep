@@ -215,7 +215,41 @@ const examSchema = new mongoose.Schema({
     lastVerifiedAt : {
         type : Date,
         default : null,
-    } ,
+    },
+
+    // Last automatic/manual source check artifacts. `verificationSnapshot` lets
+    // the auto re-verifier detect drift (SHA-256 of content) without assuming
+    // specific page structure. Snapshots are only written when evidence exists.
+    verificationSnapshot : {
+        sourceHash : {
+            type : String,
+            default : null,
+            trim : true,
+        },
+        checkedAt : {
+            type : Date,
+            default : null,
+        },
+        documentUrl : {
+            type : String,
+            default : null,
+            trim : true,
+        },
+        outcome : {
+            type : String,
+            enum : ["OK", "CHANGED", "UNREACHABLE"],
+            default : null,
+        },
+        fetchMethod : {
+            type : String,
+            default : "http",
+            trim : true,
+        },
+        durationMs : {
+            type : Number,
+            default : null,
+        },
+    },
 
     isDemo : {
         type : Boolean,
